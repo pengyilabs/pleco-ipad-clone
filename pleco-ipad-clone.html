@@ -1,0 +1,2006 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PlecoClone · Chinese Dictionary for iPad</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --accent-secondary: #52c41a;
+
+      --font-display: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-body: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-mono: 'SF Mono', ui-monospace, 'JetBrains Mono', Menlo, monospace;
+
+      --fs-xs: 11px;
+      --fs-sm: 13px;
+      --fs-base: 15px;
+      --fs-lg: 17px;
+      --fs-xl: 20px;
+      --fs-2xl: 24px;
+      --fs-3xl: 32px;
+
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+
+      --radius: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      --sidebar-w: 68px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: #1a1a1a;
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: var(--fs-base);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* ─── iPad landscape frame ──────────────────────────────────── */
+    .ipad-frame {
+      width: 100%;
+      max-width: 1194px;
+      aspect-ratio: 1194 / 834;
+      max-height: 90vh;
+      background: var(--bg);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 80px rgba(0,0,0,0.35);
+      position: relative;
+    }
+
+    /* ─── status bar ─────────────────────────────────────────────── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 20px;
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      color: var(--fg);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .status-bar .time { font-variant-numeric: tabular-nums; }
+    .status-bar .icons { display: flex; gap: 8px; align-items: center; }
+    .status-bar .icons svg { width: 14px; height: 14px; }
+
+    /* ─── app body: sidebar + content ────────────────────────────── */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ─── left sidebar ───────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 0;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .sidebar-brand {
+      width: 40px; height: 40px;
+      border-radius: var(--radius);
+      background: var(--accent);
+      display: grid; place-items: center;
+      margin-bottom: 8px;
+    }
+    .sidebar-brand svg { width: 20px; height: 20px; color: white; }
+    .sidebar-btn {
+      width: 44px; height: 44px;
+      border-radius: var(--radius);
+      border: none;
+      background: none;
+      display: grid; place-items: center;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+      position: relative;
+    }
+    .sidebar-btn svg { width: 20px; height: 20px; }
+    .sidebar-btn:hover { color: var(--fg); background: color-mix(in oklch, var(--fg) 5%, transparent); }
+    .sidebar-btn.active { color: var(--accent); background: color-mix(in oklch, var(--accent) 8%, transparent); }
+    .sidebar-btn.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 8px; bottom: 8px;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: var(--accent);
+    }
+    .sidebar-btn .label {
+      position: absolute;
+      left: 56px;
+      background: var(--fg);
+      color: white;
+      font-size: var(--fs-xs);
+      padding: 4px 10px;
+      border-radius: var(--radius);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+      z-index: 100;
+    }
+    .sidebar-btn:hover .label { opacity: 1; }
+    .sidebar-spacer { flex: 1; }
+
+    /* ─── main content area ──────────────────────────────────────── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+    .screen.active { display: flex; }
+
+    /* ─── Dictionary: split layout ───────────────────────────────── */
+    .dict-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .dict-left {
+      width: 380px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .dict-search {
+      padding: var(--space-4) var(--space-4) 0;
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 10px 14px;
+    }
+    .search-box svg { width: 18px; height: 18px; color: var(--muted); flex-shrink: 0; }
+    .search-box input {
+      flex: 1;
+      border: none;
+      background: none;
+      font: inherit;
+      font-size: var(--fs-base);
+      color: var(--fg);
+      outline: none;
+    }
+    .search-box input::placeholder { color: var(--muted); }
+    .search-box .voice-btn {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      display: grid; place-items: center;
+      cursor: pointer;
+      color: var(--muted);
+      transition: color 0.15s;
+    }
+    .search-box .voice-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .search-box .voice-btn svg { width: 14px; height: 14px; }
+
+    .dict-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 var(--space-2);
+    }
+    .dict-list-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .dict-list-item:hover { background: var(--surface); }
+    .dict-list-item.active { background: color-mix(in oklch, var(--accent) 8%, transparent); }
+    .dict-list-item .term-zh {
+      font-size: var(--fs-xl);
+      font-weight: 700;
+      min-width: 48px;
+    }
+    .dict-list-item .term-info { flex: 1; min-width: 0; }
+    .dict-list-item .term-pinyin { font-size: var(--fs-sm); color: var(--accent); }
+    .dict-list-item .term-en { font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dict-list-item .term-tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: var(--radius-pill);
+      background: color-mix(in oklch, var(--accent-secondary) 12%, transparent);
+      color: var(--accent-secondary);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .dict-right {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-5);
+    }
+
+    .entry-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--space-4); }
+    .entry-chinese {
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .entry-pinyin {
+      font-size: var(--fs-xl);
+      color: var(--accent);
+      margin-top: var(--space-1);
+      font-weight: 500;
+    }
+    .entry-actions { display: flex; gap: var(--space-2); }
+    .entry-action-btn {
+      width: 40px; height: 40px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      display: grid; place-items: center;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .entry-action-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--bg); }
+    .entry-action-btn svg { width: 18px; height: 18px; }
+    .entry-action-btn.saved { color: var(--accent); border-color: var(--accent); }
+
+    .entry-english {
+      font-size: var(--fs-xl);
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+    .entry-pos {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: color-mix(in oklch, var(--accent) 10%, transparent);
+      color: var(--accent);
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: var(--space-4);
+    }
+
+    .entry-section { margin-top: var(--space-5); }
+    .entry-section-title {
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0 0 var(--space-3);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stroke-preview {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+    }
+    .stroke-char {
+      font-size: 72px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--fg);
+    }
+    .stroke-info { flex: 1; }
+    .stroke-info p { margin: 0 0 var(--space-2); font-size: var(--fs-sm); color: var(--muted); }
+    .stroke-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: color-mix(in oklch, var(--accent-secondary) 12%, transparent);
+      color: var(--accent-secondary);
+      font-size: var(--fs-xs);
+      font-weight: 600;
+    }
+    .stroke-badge svg { width: 12px; height: 12px; }
+
+    .example-list { list-style: none; padding: 0; margin: 0; }
+    .example-item {
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
+    }
+    .example-item:last-child { border-bottom: none; }
+    .example-zh { font-size: var(--fs-lg); font-weight: 600; margin-bottom: 2px; }
+    .example-en { font-size: var(--fs-sm); color: var(--muted); }
+
+    /* ─── Flashcards: Live Review ────────────────────────────────── */
+    .flash-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .flash-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-6);
+      gap: var(--space-4);
+      position: relative;
+    }
+
+    /* live badge */
+    .flash-live-badge {
+      position: absolute;
+      top: var(--space-4);
+      left: var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: #dc2626;
+      color: white;
+      border-radius: var(--radius-pill);
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .flash-live-badge .dot {
+      width: 7px; height: 7px;
+      background: white;
+      border-radius: 50%;
+      animation: live-blink 1s ease-in-out infinite;
+    }
+    @keyframes live-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* question counter */
+    .flash-q-counter {
+      position: absolute;
+      top: var(--space-4);
+      right: var(--space-4);
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    /* prompt area */
+    .flash-prompt {
+      text-align: center;
+      margin-bottom: var(--space-2);
+    }
+    .flash-prompt-type {
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .flash-prompt-type .type-icon {
+      width: 16px; height: 16px;
+      display: inline-flex;
+    }
+    .flash-prompt-text {
+      font-size: var(--fs-lg);
+      color: var(--fg);
+      font-weight: 500;
+    }
+    .flash-prompt-char {
+      font-size: 88px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--fg);
+      letter-spacing: -0.03em;
+      margin: var(--space-2) 0;
+    }
+    .flash-prompt-char.small {
+      font-size: 36px;
+    }
+
+    /* handwriting canvas */
+    .flash-canvas-wrap {
+      width: 280px;
+      height: 280px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-lg);
+      position: relative;
+      background: var(--surface);
+      touch-action: none;
+    }
+    .flash-canvas-wrap canvas {
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+    .flash-canvas-wrap .canvas-hint {
+      position: absolute;
+      bottom: var(--space-2);
+      left: 0; right: 0;
+      text-align: center;
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      pointer-events: none;
+    }
+    .flash-canvas-wrap .grid-lines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.18;
+    }
+    .flash-canvas-wrap .grid-lines line { stroke: var(--muted); stroke-width: 1; }
+
+    /* voice input — always-on mic */
+    .flash-voice-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    .flash-mic-btn {
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      background: color-mix(in oklch, var(--accent) 8%, transparent);
+      display: grid; place-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .flash-mic-btn svg { width: 36px; height: 36px; color: var(--accent); }
+    .flash-mic-btn.listening {
+      border-color: #dc2626;
+      background: color-mix(in oklch, #dc2626 8%, transparent);
+      animation: mic-pulse 1.2s ease-in-out infinite;
+    }
+    .flash-mic-btn.listening svg { color: #dc2626; }
+    @keyframes mic-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.35); }
+      50% { box-shadow: 0 0 0 18px rgba(220,38,38,0); }
+    }
+    .flash-waveform {
+      width: 220px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+    .flash-waveform .bar {
+      width: 3px;
+      height: 8px;
+      background: var(--border);
+      border-radius: 2px;
+      transition: height 0.08s;
+    }
+    .flash-voice-hint {
+      font-size: var(--fs-sm);
+      color: var(--muted);
+    }
+    .flash-voice-transcript {
+      font-size: var(--fs-xl);
+      font-weight: 600;
+      color: var(--accent);
+      min-height: 30px;
+      margin-top: var(--space-2);
+    }
+
+    /* multiple choice */
+    .flash-choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+      width: 100%;
+      max-width: 400px;
+    }
+    .flash-choice-btn {
+      padding: 14px var(--space-4);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--bg);
+      font-size: var(--fs-lg);
+      font-family: var(--font-body);
+      color: var(--fg);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      font-weight: 500;
+    }
+    .flash-choice-btn:hover { border-color: var(--accent); background: color-mix(in oklch, var(--accent) 4%, transparent); }
+    .flash-choice-btn.correct {
+      border-color: var(--accent-secondary);
+      background: color-mix(in oklch, var(--accent-secondary) 10%, transparent);
+      color: var(--accent-secondary);
+      font-weight: 700;
+    }
+    .flash-choice-btn.wrong {
+      border-color: #dc2626;
+      background: color-mix(in oklch, #dc2626 8%, transparent);
+      color: #dc2626;
+    }
+    .flash-choice-btn:disabled { cursor: default; }
+
+    /* answer feedback */
+    .flash-feedback {
+      display: none;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 12px 24px;
+      border-radius: var(--radius-lg);
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      margin-top: var(--space-2);
+    }
+    .flash-feedback.show { display: flex; }
+    .flash-feedback.correct { background: color-mix(in oklch, var(--accent-secondary) 12%, transparent); color: var(--accent-secondary); }
+    .flash-feedback.wrong { background: color-mix(in oklch, #dc2626 10%, transparent); color: #dc2626; }
+
+    /* action bar */
+    .flash-actions {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-4);
+      padding-top: var(--space-3);
+    }
+    .flash-btn {
+      height: 48px;
+      padding: 0 24px;
+      border-radius: var(--radius-pill);
+      border: 2px solid var(--border);
+      background: var(--bg);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: var(--fs-sm);
+      font-family: var(--font-body);
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .flash-btn svg { width: 18px; height: 18px; }
+    .flash-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .flash-btn.primary:hover { background: color-mix(in oklch, var(--accent) 85%, white); }
+    .flash-btn:hover { border-color: var(--accent); }
+    .flash-btn:disabled { opacity: 0.4; cursor: default; }
+
+    /* right panel */
+    .flash-right {
+      width: 320px;
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-5);
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    .flash-right h3 {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      margin: 0 0 var(--space-4);
+    }
+
+    /* streak & score */
+    .flash-stats {
+      display: flex;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+    .flash-stat {
+      flex: 1;
+      padding: var(--space-3);
+      background: var(--surface);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+    .flash-stat-value {
+      font-size: var(--fs-2xl);
+      font-weight: 700;
+      color: var(--fg);
+    }
+    .flash-stat-label {
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .flash-stat.streak .flash-stat-value { color: #f59e0b; }
+
+    .flash-progress {
+      margin-bottom: var(--space-5);
+    }
+    .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--fs-xs);
+      color: var(--muted);
+      margin-top: var(--space-2);
+    }
+    .flash-word-list { list-style: none; padding: 0; margin: 0; }
+    .flash-word-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 8px 0;
+      border-bottom: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
+      font-size: var(--fs-sm);
+    }
+    .flash-word-item .word-zh { font-weight: 700; min-width: 32px; }
+    .flash-word-item .word-pinyin { color: var(--accent); flex: 1; }
+    .flash-word-item .word-status {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+    .flash-word-item .word-status.learned { background: var(--accent-secondary); }
+    .flash-word-item .word-status.current { background: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 20%, transparent); }
+
+    /* paused overlay */
+    .flash-paused-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: color-mix(in oklch, var(--bg) 85%, transparent);
+      backdrop-filter: blur(4px);
+      z-index: 10;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-4);
+    }
+    .flash-paused-overlay.show { display: flex; }
+    .flash-paused-overlay h2 { font-size: var(--fs-2xl); font-weight: 700; margin: 0; }
+    .flash-paused-overlay p { color: var(--muted); margin: 0; }
+
+    /* ─── OCR: horizontal split ──────────────────────────────────── */
+    .ocr-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .ocr-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-5);
+      gap: var(--space-4);
+    }
+    .camera-frame {
+      width: 100%;
+      max-width: 480px;
+      aspect-ratio: 4 / 3;
+      background: #1a1a1a;
+      border-radius: var(--radius-lg);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .camera-frame .scan-area {
+      width: 65%;
+      height: 55%;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-radius: var(--radius);
+      position: relative;
+    }
+    .camera-frame .scan-area::before,
+    .camera-frame .scan-area::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      border-color: var(--accent);
+      border-style: solid;
+    }
+    .camera-frame .scan-area::before {
+      top: -2px; left: -2px;
+      border-width: 3px 0 0 3px;
+      border-radius: 4px 0 0 0;
+    }
+    .camera-frame .scan-area::after {
+      bottom: -2px; right: -2px;
+      border-width: 0 3px 3px 0;
+      border-radius: 0 0 4px 0;
+    }
+    .camera-hint {
+      color: rgba(255,255,255,0.6);
+      font-size: var(--fs-sm);
+      position: absolute;
+      bottom: var(--space-4);
+    }
+    .scan-line {
+      position: absolute;
+      top: 0; left: 10%; right: 10%;
+      height: 2px;
+      background: var(--accent);
+      animation: scan 2.5s ease-in-out infinite;
+      box-shadow: 0 0 8px var(--accent);
+    }
+    @keyframes scan {
+      0%, 100% { top: 10%; opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      50% { top: 85%; }
+    }
+
+    .ocr-controls {
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+    }
+    .ocr-mode-btn {
+      padding: 8px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      font-size: var(--fs-sm);
+      font-family: var(--font-body);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .ocr-mode-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .ocr-mode-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+    .ocr-capture {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      background: var(--bg);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.1s;
+    }
+    .ocr-capture::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .ocr-capture:active { transform: scale(0.92); }
+
+    .ocr-right {
+      width: 340px;
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-5);
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    .ocr-right h3 {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      margin: 0 0 var(--space-4);
+    }
+    .ocr-history-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
+    }
+    .ocr-history-char {
+      font-size: var(--fs-2xl);
+      font-weight: 700;
+      min-width: 40px;
+    }
+    .ocr-history-info { flex: 1; }
+    .ocr-history-info .pinyin { color: var(--accent); font-weight: 500; font-size: var(--fs-sm); }
+    .ocr-history-info .meaning { font-size: var(--fs-xs); color: var(--muted); }
+    .ocr-history-actions { display: flex; gap: var(--space-1); }
+    .ocr-sm-btn {
+      width: 30px; height: 30px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      display: grid; place-items: center;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .ocr-sm-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .ocr-sm-btn svg { width: 14px; height: 14px; }
+
+    /* ─── Stroke Order: horizontal layout ────────────────────────── */
+    .stroke-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .stroke-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-6);
+    }
+    .stroke-display {
+      width: 100%;
+      max-width: 340px;
+      aspect-ratio: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .stroke-display .grid-lines {
+      position: absolute;
+      inset: 0;
+      opacity: 0.15;
+    }
+    .stroke-display .grid-lines line { stroke: var(--muted); stroke-width: 1; }
+    .stroke-display .char-big {
+      font-size: 120px;
+      font-weight: 700;
+      color: var(--accent);
+      opacity: 0.25;
+      position: relative;
+      z-index: 1;
+    }
+    .stroke-display .stroke-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+    .stroke-display .stroke-overlay svg { width: 100%; height: 100%; }
+    .stroke-display .stroke-overlay path {
+      fill: none;
+      stroke: var(--fg);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .stroke-controls {
+      display: flex;
+      gap: var(--space-3);
+      margin-top: var(--space-5);
+      justify-content: center;
+    }
+    .stroke-ctrl-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      display: grid; place-items: center;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .stroke-ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .stroke-ctrl-btn svg { width: 18px; height: 18px; }
+    .stroke-ctrl-btn.play { background: var(--accent); border-color: var(--accent); color: white; }
+
+    .stroke-right {
+      width: 320px;
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-5);
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    .stroke-right h3 {
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      margin: 0 0 var(--space-4);
+    }
+    .stroke-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
+      font-size: var(--fs-sm);
+    }
+    .stroke-info-row:last-child { border-bottom: none; }
+    .stroke-info-row .label { color: var(--muted); }
+    .stroke-info-row .value { font-weight: 600; }
+
+    .stroke-nav {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      margin-top: var(--space-5);
+    }
+    .stroke-nav-btn {
+      width: 40px; height: 40px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      font-size: var(--fs-base);
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--fg);
+      transition: all 0.15s;
+      display: grid; place-items: center;
+    }
+    .stroke-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .stroke-nav-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .stroke-step-list {
+      margin-top: var(--space-5);
+      list-style: none;
+      padding: 0;
+    }
+    .stroke-step-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 8px 0;
+      border-bottom: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
+      font-size: var(--fs-sm);
+    }
+    .stroke-step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: grid; place-items: center;
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .stroke-step-num.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .stroke-step-name { flex: 1; }
+    .stroke-step-type { color: var(--muted); font-size: var(--fs-xs); }
+  </style>
+</head>
+<body>
+  <div class="ipad-frame">
+    <div class="status-bar" data-od-id="status-bar">
+      <span class="time">9:41</span>
+      <div class="icons">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 7l4-4 4 4"/><path d="M5 3v10"/><path d="M9 7l4-4 4 4"/><path d="M13 3v10"/><path d="M17 7l4-4 4 4"/><path d="M21 3v10"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="22" height="12" rx="2"/><rect x="3" y="8" width="12" height="8" fill="currentColor" rx="1"/></svg>
+      </div>
+    </div>
+
+    <div class="app-body">
+      <!-- Sidebar -->
+      <nav class="sidebar" data-od-id="sidebar">
+        <div class="sidebar-brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </div>
+        <button class="sidebar-btn active" data-tab="screen-dict">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <span class="label">Dictionary</span>
+        </button>
+        <button class="sidebar-btn" data-tab="screen-flash">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 4v16"/></svg>
+          <span class="label">Flashcards</span>
+        </button>
+        <button class="sidebar-btn" data-tab="screen-ocr">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span class="label">OCR Camera</span>
+        </button>
+        <button class="sidebar-btn" data-tab="screen-stroke">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <span class="label">Stroke Order</span>
+        </button>
+        <div class="sidebar-spacer"></div>
+        <button class="sidebar-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span class="label">Settings</span>
+        </button>
+      </nav>
+
+      <div class="main-content">
+        <!-- Dictionary Screen -->
+        <div class="screen active" id="screen-dict" data-od-id="screen-dict">
+          <div class="dict-layout">
+            <div class="dict-left">
+              <div class="dict-search">
+                <div class="search-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                  <input type="text" placeholder="Search..." value="你" />
+                  <button class="voice-btn" title="Voice input">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="dict-list" data-od-id="dict-list">
+                <div class="dict-list-item active">
+                  <span class="term-zh">你</span>
+                  <div class="term-info">
+                    <span class="term-pinyin">nǐ</span>
+                    <span class="term-en">you; your</span>
+                  </div>
+                  <span class="term-tag">HSK 1</span>
+                </div>
+                <div class="dict-list-item">
+                  <span class="term-zh">你好</span>
+                  <div class="term-info">
+                    <span class="term-pinyin">nǐ hǎo</span>
+                    <span class="term-en">hello; hi</span>
+                  </div>
+                  <span class="term-tag">HSK 1</span>
+                </div>
+                <div class="dict-list-item">
+                  <span class="term-zh">你们</span>
+                  <div class="term-info">
+                    <span class="term-pinyin">nǐ men</span>
+                    <span class="term-en">you (plural)</span>
+                  </div>
+                  <span class="term-tag">HSK 1</span>
+                </div>
+                <div class="dict-list-item">
+                  <span class="term-zh">你的</span>
+                  <div class="term-info">
+                    <span class="term-pinyin">nǐ de</span>
+                    <span class="term-en">your; yours</span>
+                  </div>
+                </div>
+                <div class="dict-list-item">
+                  <span class="term-zh">年纪</span>
+                  <div class="term-info">
+                    <span class="term-pinyin">nián jì</span>
+                    <span class="term-en">age; years</span>
+                  </div>
+                </div>
+                <div class="dict-list-item">
+                  <span class="term-zh">年</span>
+                  <div class="term-info">
+                    <span class="term-pinyin">nián</span>
+                    <span class="term-en">year</span>
+                  </div>
+                  <span class="term-tag">HSK 1</span>
+                </div>
+                <div class="dict-list-item">
+                  <span class="term-zh">念</span>
+                  <div class="term-info">
+                    <span class="term-pinyin">niàn</span>
+                    <span class="term-en">to read; to study</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="dict-right" data-od-id="dict-detail">
+              <div class="entry-header">
+                <div>
+                  <div class="entry-chinese">你</div>
+                  <div class="entry-pinyin">nǐ</div>
+                </div>
+                <div class="entry-actions">
+                  <button class="entry-action-btn saved" title="Saved">
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                  </button>
+                  <button class="entry-action-btn" title="Add to flashcards">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+                  </button>
+                  <button class="entry-action-btn" title="Share">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="entry-english">you; your</div>
+              <span class="entry-pos">pronoun</span>
+
+              <div class="entry-section">
+                <h4 class="entry-section-title">Stroke Order</h4>
+                <div class="stroke-preview">
+                  <span class="stroke-char">你</span>
+                  <div class="stroke-info">
+                    <p>7 strokes · Radical: 亻 (person)</p>
+                    <span class="stroke-badge">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg>
+                      HSK 1
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="entry-section">
+                <h4 class="entry-section-title">Examples</h4>
+                <ul class="example-list">
+                  <li class="example-item">
+                    <div class="example-zh">你好，我叫李明。</div>
+                    <div class="example-en">Hello, my name is Li Ming.</div>
+                  </li>
+                  <li class="example-item">
+                    <div class="example-zh">你是哪国人？</div>
+                    <div class="example-en">What country are you from?</div>
+                  </li>
+                  <li class="example-item">
+                    <div class="example-zh">你的名字很好听。</div>
+                    <div class="example-en">Your name sounds very nice.</div>
+                  </li>
+                  <li class="example-item">
+                    <div class="example-zh">请问你多大了？</div>
+                    <div class="example-en">Excuse me, how old are you?</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flashcards Screen -->
+        <div class="screen" id="screen-flash" data-od-id="screen-flash">
+          <div class="flash-layout">
+            <div class="flash-left">
+              <!-- Live badge -->
+              <div class="flash-live-badge" id="flash-live-badge"><span class="dot"></span> LIVE REVIEW</div>
+              <!-- Question counter -->
+              <div class="flash-q-counter" id="flash-q-counter">Q 1 / 40</div>
+
+              <!-- Prompt -->
+              <div class="flash-prompt" id="flash-prompt">
+                <div class="flash-prompt-type" id="flash-type-label">
+                  <svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  WRITE
+                </div>
+                <div class="flash-prompt-text" id="flash-prompt-text">Write this character:</div>
+                <div class="flash-prompt-char" id="flash-prompt-char">你</div>
+              </div>
+
+              <!-- Handwriting canvas (type: write) -->
+              <div class="flash-canvas-wrap" id="flash-canvas-wrap">
+                <svg class="grid-lines" viewBox="0 0 280 280">
+                  <line x1="140" y1="0" x2="140" y2="280"/>
+                  <line x1="0" y1="140" x2="280" y2="140"/>
+                  <line x1="0" y1="0" x2="280" y2="280"/>
+                  <line x1="280" y1="0" x2="0" y2="280"/>
+                </svg>
+                <canvas id="flash-canvas" width="280" height="280"></canvas>
+                <span class="canvas-hint">Draw with finger or Apple Pencil</span>
+              </div>
+
+              <!-- Voice input (type: voice) — mic stays on -->
+              <div class="flash-voice-area" id="flash-voice-area" style="display:none;">
+                <button class="flash-mic-btn" id="flash-mic-btn" title="Microphone active">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                </button>
+                <div class="flash-waveform" id="flash-waveform">
+                  <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                  <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                  <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
+                <span class="flash-voice-hint" id="flash-voice-hint">Listening… say the pinyin</span>
+                <div class="flash-voice-transcript" id="flash-voice-transcript"></div>
+              </div>
+
+              <!-- Multiple choice (type: choice) -->
+              <div class="flash-choices" id="flash-choices" style="display:none;"></div>
+
+              <!-- Feedback -->
+              <div class="flash-feedback" id="flash-feedback"></div>
+
+              <!-- Actions -->
+              <div class="flash-actions">
+                <button class="flash-btn" id="flash-clear-btn" onclick="clearFlashCanvas()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                  Clear
+                </button>
+                <button class="flash-btn" id="flash-pause-btn" onclick="togglePause()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  Pause
+                </button>
+                <button class="flash-btn primary" id="flash-check-btn" onclick="flashCheck()">
+                  Check
+                </button>
+              </div>
+
+              <!-- Paused overlay -->
+              <div class="flash-paused-overlay" id="flash-paused-overlay">
+                <h2>Review Paused</h2>
+                <p>Tap Resume to continue where you left off</p>
+                <button class="flash-btn primary" onclick="togglePause()" style="margin-top:var(--space-4)">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Resume
+                </button>
+              </div>
+            </div>
+            <div class="flash-right">
+              <h3>HSK 1 · Live Review</h3>
+              <div class="flash-stats">
+                <div class="flash-stat">
+                  <div class="flash-stat-value" id="flash-score">0</div>
+                  <div class="flash-stat-label">Correct</div>
+                </div>
+                <div class="flash-stat">
+                  <div class="flash-stat-value" id="flash-total">0</div>
+                  <div class="flash-stat-label">Reviewed</div>
+                </div>
+                <div class="flash-stat streak">
+                  <div class="flash-stat-value" id="flash-streak">0</div>
+                  <div class="flash-stat-label">Streak</div>
+                </div>
+              </div>
+              <div class="flash-progress">
+                <div class="progress-bar"><div class="progress-fill" id="flash-progress-fill"></div></div>
+                <div class="progress-label">
+                  <span id="flash-progress-label">0 / 40 reviewed</span>
+                  <span id="flash-progress-remaining">40 remaining</span>
+                </div>
+              </div>
+              <ul class="flash-word-list" id="flash-word-list"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- OCR Screen -->
+        <div class="screen" id="screen-ocr" data-od-id="screen-ocr">
+          <div class="ocr-layout">
+            <div class="ocr-left">
+              <div class="camera-frame">
+                <div class="scan-area">
+                  <div class="scan-line"></div>
+                </div>
+                <span class="camera-hint">Point camera at Chinese text</span>
+              </div>
+              <div class="ocr-controls">
+                <button class="ocr-mode-btn active">Single char</button>
+                <button class="ocr-mode-btn">Multi-line</button>
+                <button class="ocr-capture" title="Capture"></button>
+                <button class="ocr-mode-btn">Handwriting</button>
+                <button class="ocr-mode-btn">Radical</button>
+              </div>
+            </div>
+            <div class="ocr-right">
+              <h3>Scan History</h3>
+              <div class="ocr-history-item">
+                <span class="ocr-history-char">猫</span>
+                <div class="ocr-history-info">
+                  <span class="pinyin">māo</span>
+                  <div class="meaning">cat; feline</div>
+                </div>
+                <div class="ocr-history-actions">
+                  <button class="ocr-sm-btn" title="Hear">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
+                  </button>
+                  <button class="ocr-sm-btn" title="Add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="ocr-history-item">
+                <span class="ocr-history-char">狗</span>
+                <div class="ocr-history-info">
+                  <span class="pinyin">gǒu</span>
+                  <div class="meaning">dog; canine</div>
+                </div>
+                <div class="ocr-history-actions">
+                  <button class="ocr-sm-btn" title="Hear">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
+                  </button>
+                  <button class="ocr-sm-btn" title="Add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="ocr-history-item">
+                <span class="ocr-history-char">鱼</span>
+                <div class="ocr-history-info">
+                  <span class="pinyin">yú</span>
+                  <div class="meaning">fish</div>
+                </div>
+                <div class="ocr-history-actions">
+                  <button class="ocr-sm-btn" title="Hear">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
+                  </button>
+                  <button class="ocr-sm-btn" title="Add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="ocr-history-item">
+                <span class="ocr-history-char">鸟</span>
+                <div class="ocr-history-info">
+                  <span class="pinyin">niǎo</span>
+                  <div class="meaning">bird</div>
+                </div>
+                <div class="ocr-history-actions">
+                  <button class="ocr-sm-btn" title="Hear">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
+                  </button>
+                  <button class="ocr-sm-btn" title="Add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stroke Order Screen -->
+        <div class="screen" id="screen-stroke" data-od-id="screen-stroke">
+          <div class="stroke-layout">
+            <div class="stroke-left">
+              <div class="stroke-display" data-od-id="stroke-display">
+                <svg class="grid-lines" viewBox="0 0 300 300">
+                  <line x1="150" y1="0" x2="150" y2="300"/>
+                  <line x1="0" y1="150" x2="300" y2="150"/>
+                  <line x1="0" y1="0" x2="300" y2="300"/>
+                  <line x1="300" y1="0" x2="0" y2="300"/>
+                </svg>
+                <span class="char-big">龙</span>
+                <div class="stroke-overlay">
+                  <svg viewBox="0 0 300 300">
+                    <path d="M80 250 Q100 200 120 180 Q140 160 160 120 Q180 80 200 60 Q220 40 240 50 Q260 60 250 90 Q240 120 200 140 Q160 160 140 200 Q120 240 100 260"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stroke-controls">
+                <button class="stroke-ctrl-btn" title="Step back">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+                </button>
+                <button class="stroke-ctrl-btn play" title="Play animation">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </button>
+                <button class="stroke-ctrl-btn" title="Step forward">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+                </button>
+                <button class="stroke-ctrl-btn" title="Restart">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="stroke-right">
+              <h3>龙 · dragon</h3>
+              <div class="stroke-info-row">
+                <span class="label">Strokes</span>
+                <span class="value">5</span>
+              </div>
+              <div class="stroke-info-row">
+                <span class="label">Radical</span>
+                <span class="value">龙 (dragon)</span>
+              </div>
+              <div class="stroke-info-row">
+                <span class="label">Structure</span>
+                <span class="value">Single component</span>
+              </div>
+              <div class="stroke-info-row">
+                <span class="label">HSK Level</span>
+                <span class="value">HSK 2</span>
+              </div>
+
+              <h3 style="margin-top: var(--space-6);">Stroke Steps</h3>
+              <ul class="stroke-step-list">
+                <li class="stroke-step-item">
+                  <span class="stroke-step-num active">1</span>
+                  <span class="stroke-step-name">Horizontal left-falling</span>
+                  <span class="stroke-step-type">横撇</span>
+                </li>
+                <li class="stroke-step-item">
+                  <span class="stroke-step-num">2</span>
+                  <span class="stroke-step-name">Vertical hook</span>
+                  <span class="stroke-step-type">竖钩</span>
+                </li>
+                <li class="stroke-step-item">
+                  <span class="stroke-step-num">3</span>
+                  <span class="stroke-step-name">Horizontal turning</span>
+                  <span class="stroke-step-type">横折</span>
+                </li>
+                <li class="stroke-step-item">
+                  <span class="stroke-step-num">4</span>
+                  <span class="stroke-step-name">Vertical bending</span>
+                  <span class="stroke-step-type">竖弯</span>
+                </li>
+                <li class="stroke-step-item">
+                  <span class="stroke-step-num">5</span>
+                  <span class="stroke-step-name">Horizontal</span>
+                  <span class="stroke-step-type">横</span>
+                </li>
+              </ul>
+
+              <h3 style="margin-top: var(--space-6);">Practice</h3>
+              <div class="stroke-nav">
+                <button class="stroke-nav-btn active">龙</button>
+                <button class="stroke-nav-btn">虎</button>
+                <button class="stroke-nav-btn">马</button>
+                <button class="stroke-nav-btn">鸟</button>
+                <button class="stroke-nav-btn">鱼</button>
+                <button class="stroke-nav-btn">虫</button>
+                <button class="stroke-nav-btn">牛</button>
+                <button class="stroke-nav-btn">羊</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ─── Sidebar & screen switching ──────────────────────────────── */
+    document.querySelectorAll('.sidebar-btn[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-btn[data-tab]').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+    document.querySelectorAll('.dict-list-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.dict-list-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+    document.querySelectorAll('.ocr-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ocr-mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+    document.querySelectorAll('.stroke-nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.stroke-nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelector('.stroke-display .char-big').textContent = btn.textContent;
+      });
+    });
+
+    /* ═══════════════════════════════════════════════════════════════════
+       FLASHCARD — LIVE REVIEW ENGINE
+       ═══════════════════════════════════════════════════════════════════ */
+
+    /* ─── Vocabulary bank ─────────────────────────────────────────── */
+    const flashWords = [
+      { zh: '你', pinyin: 'nǐ', en: 'you; your' },
+      { zh: '好', pinyin: 'hǎo', en: 'good; well' },
+      { zh: '他', pinyin: 'tā', en: 'he; him' },
+      { zh: '她', pinyin: 'tā', en: 'she; her' },
+      { zh: '谢谢', pinyin: 'xièxie', en: 'thank you', chars: ['谢','谢'] },
+      { zh: '不', pinyin: 'bù', en: 'no; not' },
+      { zh: '是', pinyin: 'shì', en: 'is; am; are' },
+      { zh: '我', pinyin: 'wǒ', en: 'I; me' },
+      { zh: '的', pinyin: 'de', en: 'possessive particle' },
+      { zh: '吗', pinyin: 'ma', en: 'question particle' },
+      { zh: '人', pinyin: 'rén', en: 'person; people' },
+      { zh: '大', pinyin: 'dà', en: 'big; large' },
+      { zh: '小', pinyin: 'xiǎo', en: 'small; little' },
+      { zh: '水', pinyin: 'shuǐ', en: 'water' },
+      { zh: '火', pinyin: 'huǒ', en: 'fire' },
+      { zh: '山', pinyin: 'shān', en: 'mountain' },
+      { zh: '天', pinyin: 'tiān', en: 'sky; day' },
+      { zh: '地', pinyin: 'dì', en: 'earth; ground' },
+      { zh: '一', pinyin: 'yī', en: 'one' },
+      { zh: '二', pinyin: 'èr', en: 'two' },
+      { zh: '三', pinyin: 'sān', en: 'three' },
+      { zh: '四', pinyin: 'sì', en: 'four' },
+      { zh: '五', pinyin: 'wǔ', en: 'five' },
+      { zh: '六', pinyin: 'liù', en: 'six' },
+      { zh: '七', pinyin: 'qī', en: 'seven' },
+      { zh: '八', pinyin: 'bā', en: 'eight' },
+      { zh: '九', pinyin: 'jiǔ', en: 'nine' },
+      { zh: '十', pinyin: 'shí', en: 'ten' },
+      { zh: '猫', pinyin: 'māo', en: 'cat' },
+      { zh: '狗', pinyin: 'gǒu', en: 'dog' },
+      { zh: '鱼', pinyin: 'yú', en: 'fish' },
+      { zh: '鸟', pinyin: 'niǎo', en: 'bird' },
+      { zh: '花', pinyin: 'huā', en: 'flower' },
+      { zh: '树', pinyin: 'shù', en: 'tree' },
+      { zh: '吃', pinyin: 'chī', en: 'to eat' },
+      { zh: '喝', pinyin: 'hē', en: 'to drink' },
+      { zh: '走', pinyin: 'zǒu', en: 'to walk' },
+      { zh: '看', pinyin: 'kàn', en: 'to look; to see' },
+      { zh: '听', pinyin: 'tīng', en: 'to listen' },
+      { zh: '说', pinyin: 'shuō', en: 'to speak; to say' },
+    ];
+
+    /* ─── Split multi-char words into single-char questions ───────── */
+    function buildQuestionQueue(words) {
+      const queue = [];
+      for (const w of words) {
+        if (w.chars && w.chars.length > 1) {
+          for (const ch of w.chars) {
+            const charInfo = words.find(x => x.zh === ch) || { zh: ch, pinyin: '?', en: ch };
+            queue.push({ zh: ch, pinyin: charInfo.pinyin, en: charInfo.en, parent: w.zh });
+          }
+        } else {
+          queue.push({ zh: w.zh, pinyin: w.pinyin, en: w.en });
+        }
+      }
+      return queue;
+    }
+
+    /* ─── Card type picker — only write, voice, choice ────────────── */
+    const CARD_TYPES = ['write', 'voice', 'choice'];
+    const TYPE_WEIGHTS = [0.35, 0.35, 0.30];
+
+    function pickType() {
+      const r = Math.random();
+      let cum = 0;
+      for (let i = 0; i < CARD_TYPES.length; i++) {
+        cum += TYPE_WEIGHTS[i];
+        if (r < cum) return CARD_TYPES[i];
+      }
+      return CARD_TYPES[0];
+    }
+
+    /* ─── State ───────────────────────────────────────────────────── */
+    let flashQueue = [];
+    let flashState = {
+      idx: 0,
+      score: 0,
+      total: 0,
+      streak: 0,
+      currentType: null,
+      answered: false,
+      paused: false,
+      isListening: false,
+      autoAdvanceTimer: null,
+    };
+
+    function shuffleArray(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function getCurrentQuestion() {
+      return flashQueue[flashState.idx % flashQueue.length];
+    }
+
+    /* ─── DOM refs ────────────────────────────────────────────────── */
+    const elTypeLabel = document.getElementById('flash-type-label');
+    const elPromptText = document.getElementById('flash-prompt-text');
+    const elPromptChar = document.getElementById('flash-prompt-char');
+    const elCanvasWrap = document.getElementById('flash-canvas-wrap');
+    const elCanvas = document.getElementById('flash-canvas');
+    const elVoiceArea = document.getElementById('flash-voice-area');
+    const elMicBtn = document.getElementById('flash-mic-btn');
+    const elWaveform = document.getElementById('flash-waveform');
+    const elVoiceHint = document.getElementById('flash-voice-hint');
+    const elVoiceTranscript = document.getElementById('flash-voice-transcript');
+    const elChoices = document.getElementById('flash-choices');
+    const elFeedback = document.getElementById('flash-feedback');
+    const elCheckBtn = document.getElementById('flash-check-btn');
+    const elPauseBtn = document.getElementById('flash-pause-btn');
+    const elPausedOverlay = document.getElementById('flash-paused-overlay');
+    const elQCounter = document.getElementById('flash-q-counter');
+    const elScore = document.getElementById('flash-score');
+    const elTotal = document.getElementById('flash-total');
+    const elStreak = document.getElementById('flash-streak');
+    const elProgressFill = document.getElementById('flash-progress-fill');
+    const elProgressLabel = document.getElementById('flash-progress-label');
+    const elProgressRemaining = document.getElementById('flash-progress-remaining');
+    const elWordList = document.getElementById('flash-word-list');
+
+    /* ═══════════════════════════════════════════════════════════════════
+       CANVAS — Handwriting
+       ═══════════════════════════════════════════════════════════════════ */
+    const ctx = elCanvas.getContext('2d');
+    let drawing = false;
+    let lastPt = null;
+
+    function clearFlashCanvas() {
+      ctx.clearRect(0, 0, 280, 280);
+    }
+
+    function getCanvasPos(e) {
+      const rect = elCanvas.getBoundingClientRect();
+      const scaleX = 280 / rect.width;
+      const scaleY = 280 / rect.height;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+
+    function startDraw(e) {
+      if (flashState.answered) return;
+      drawing = true;
+      lastPt = getCanvasPos(e);
+      ctx.beginPath();
+      ctx.moveTo(lastPt.x, lastPt.y);
+      ctx.strokeStyle = '#111111';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+    }
+
+    function doDraw(e) {
+      if (!drawing) return;
+      e.preventDefault();
+      const pt = getCanvasPos(e);
+      ctx.lineTo(pt.x, pt.y);
+      ctx.stroke();
+      lastPt = pt;
+    }
+
+    function endDraw() { drawing = false; }
+
+    elCanvas.addEventListener('mousedown', startDraw);
+    elCanvas.addEventListener('mousemove', doDraw);
+    elCanvas.addEventListener('mouseup', endDraw);
+    elCanvas.addEventListener('mouseleave', endDraw);
+    elCanvas.addEventListener('touchstart', startDraw, { passive: false });
+    elCanvas.addEventListener('touchmove', doDraw, { passive: false });
+    elCanvas.addEventListener('touchend', endDraw);
+
+    /* ═══════════════════════════════════════════════════════════════════
+       VOICE — Web Speech API (always-on mic)
+       ═══════════════════════════════════════════════════════════════════ */
+    let recognition = null;
+    let waveInterval = null;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    function initSpeechRecognition() {
+      if (!SpeechRecognition) return null;
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'zh-CN';
+
+      rec.onresult = (event) => {
+        let interim = '';
+        let final = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            final += transcript;
+          } else {
+            interim += transcript;
+          }
+        }
+        elVoiceTranscript.textContent = final || interim;
+        if (final && !flashState.answered) {
+          processVoiceAnswer(final.trim());
+        }
+      };
+
+      rec.onerror = (event) => {
+        if (event.error === 'no-speech' || event.error === 'aborted') return;
+        console.warn('Speech error:', event.error);
+      };
+
+      rec.onend = () => {
+        if (flashState.isListening && !flashState.paused && !flashState.answered) {
+          try { rec.start(); } catch(e) {}
+        }
+      };
+
+      return rec;
+    }
+
+    function startListening() {
+      if (!recognition) recognition = initSpeechRecognition();
+      if (!recognition) {
+        elVoiceHint.textContent = 'Voice not supported — tap Check';
+        return;
+      }
+      flashState.isListening = true;
+      elMicBtn.classList.add('listening');
+      elVoiceHint.textContent = 'Listening… say the pinyin';
+      startWaveform();
+      try { recognition.start(); } catch(e) {}
+    }
+
+    function stopListening() {
+      flashState.isListening = false;
+      elMicBtn.classList.remove('listening');
+      stopWaveform();
+      if (recognition) {
+        try { recognition.stop(); } catch(e) {}
+      }
+    }
+
+    function startWaveform() {
+      const bars = elWaveform.querySelectorAll('.bar');
+      waveInterval = setInterval(() => {
+        bars.forEach(bar => {
+          bar.style.height = (Math.random() * 36 + 6) + 'px';
+          bar.style.background = 'var(--accent)';
+        });
+      }, 80);
+    }
+
+    function stopWaveform() {
+      clearInterval(waveInterval);
+      elWaveform.querySelectorAll('.bar').forEach(bar => {
+        bar.style.height = '8px';
+        bar.style.background = 'var(--border)';
+      });
+    }
+
+    function processVoiceAnswer(spoken) {
+      if (flashState.answered) return;
+      const q = getCurrentQuestion();
+      // Normalize: strip tones, compare lowercase pinyin
+      const normalize = s => s.toLowerCase().replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g, m => {
+        const map = {'ā':'a','á':'a','ǎ':'a','à':'a','ē':'e','é':'e','ě':'e','è':'e','ī':'i','í':'i','ǐ':'i','ì':'i','ō':'o','ó':'o','ǒ':'o','ò':'o','ū':'u','ú':'u','ǔ':'u','ù':'u','ǖ':'ü','ǘ':'ü','ǚ':'ü','ǜ':'ü'};
+        return map[m] || m;
+      }).replace(/\s+/g, '');
+
+      const spokenNorm = normalize(spoken);
+      const targetNorm = normalize(q.pinyin);
+
+      // Also accept the Chinese character itself as valid
+      if (spoken.includes(q.zh) || spokenNorm === targetNorm) {
+        flashState.answered = true;
+        stopListening();
+        onCorrect();
+      }
+      // If they said something wrong, give them a moment then mark wrong
+      if (spoken && !flashState.answered && spokenNorm.length >= targetNorm.length) {
+        flashState.answered = true;
+        stopListening();
+        onWrong(q);
+      }
+    }
+
+    elMicBtn.addEventListener('click', () => {
+      if (flashState.answered) return;
+      if (flashState.isListening) {
+        stopListening();
+      } else {
+        startListening();
+      }
+    });
+
+    /* ═══════════════════════════════════════════════════════════════════
+       RENDER QUESTION
+       ═══════════════════════════════════════════════════════════════════ */
+    function renderFlashcard() {
+      clearTimeout(flashState.autoAdvanceTimer);
+      flashState.answered = false;
+      flashState.currentType = pickType();
+      const q = getCurrentQuestion();
+
+      elFeedback.className = 'flash-feedback';
+      elFeedback.textContent = '';
+      elFeedback.style.display = 'none';
+      elCheckBtn.disabled = false;
+
+      // hide all mode areas
+      elCanvasWrap.style.display = 'none';
+      elVoiceArea.style.display = 'none';
+      elChoices.style.display = 'none';
+      elChoices.innerHTML = '';
+      elVoiceTranscript.textContent = '';
+
+      // question counter
+      elQCounter.textContent = `Q ${flashState.total + 1} / ${flashQueue.length}`;
+
+      switch (flashState.currentType) {
+        case 'write':
+          elTypeLabel.innerHTML = '<svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> WRITE';
+          elPromptText.textContent = 'Write this character:';
+          elPromptChar.textContent = q.en;
+          elPromptChar.className = 'flash-prompt-char small';
+          elCanvasWrap.style.display = '';
+          clearFlashCanvas();
+          break;
+
+        case 'voice':
+          elTypeLabel.innerHTML = '<svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg> SPEAK';
+          elPromptText.textContent = 'Say the pinyin for:';
+          elPromptChar.textContent = q.zh;
+          elPromptChar.className = 'flash-prompt-char';
+          elVoiceArea.style.display = 'flex';
+          elVoiceHint.textContent = 'Listening… say the pinyin';
+          startListening();
+          break;
+
+        case 'choice':
+          elTypeLabel.innerHTML = '<svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> CHOOSE';
+          elPromptText.textContent = 'Which one means:';
+          elPromptChar.textContent = q.en;
+          elPromptChar.className = 'flash-prompt-char small';
+          elChoices.style.display = 'grid';
+          buildChoices(q);
+          break;
+      }
+
+      // highlight current in word list
+      updateWordListHighlight();
+    }
+
+    function buildChoices(correctWord) {
+      const distractors = flashWords
+        .filter(w => w.zh !== correctWord.zh && w.zh.length === correctWord.zh.length)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+      if (distractors.length < 3) {
+        const extra = flashWords.filter(w => w.zh !== correctWord.zh && !distractors.includes(w)).slice(0, 3 - distractors.length);
+        distractors.push(...extra);
+      }
+      const options = shuffleArray([correctWord, ...distractors]);
+      elChoices.innerHTML = options.map(w =>
+        `<button class="flash-choice-btn" data-zh="${w.zh}" onclick="selectChoice(this)">${w.zh}<br><span style="font-size:var(--fs-xs);color:var(--muted);font-weight:400">${w.pinyin}</span></button>`
+      ).join('');
+    }
+
+    function selectChoice(btn) {
+      if (flashState.answered) return;
+      flashState.answered = true;
+      const q = getCurrentQuestion();
+      elChoices.querySelectorAll('.flash-choice-btn').forEach(b => {
+        b.disabled = true;
+        if (b.dataset.zh === q.zh) b.classList.add('correct');
+      });
+      if (btn.dataset.zh === q.zh) {
+        btn.classList.add('correct');
+        onCorrect();
+      } else {
+        btn.classList.add('wrong');
+        onWrong(q);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       CHECK / CORRECT / WRONG / ADVANCE
+       ═══════════════════════════════════════════════════════════════════ */
+    function flashCheck() {
+      if (flashState.answered) return;
+      flashState.answered = true;
+      const q = getCurrentQuestion();
+      stopListening();
+      if (flashState.currentType === 'voice') {
+        // If mic was on but no speech received, count as correct (user attempted)
+        onCorrect();
+      } else {
+        onCorrect();
+      }
+    }
+
+    function onCorrect() {
+      flashState.score++;
+      flashState.streak++;
+      flashState.total++;
+      updateStats();
+      showFeedback(true, flashState.streak >= 3 ? `\u{1F525} ${flashState.streak} streak!` : 'Correct!');
+      flashState.autoAdvanceTimer = setTimeout(flashNext, 1400);
+    }
+
+    function onWrong(q) {
+      flashState.streak = 0;
+      flashState.total++;
+      updateStats();
+      showFeedback(false, `Answer: ${q.zh} (${q.pinyin})`);
+      flashState.autoAdvanceTimer = setTimeout(flashNext, 2000);
+    }
+
+    function showFeedback(correct, msg) {
+      elFeedback.className = `flash-feedback show ${correct ? 'correct' : 'wrong'}`;
+      elFeedback.textContent = (correct ? '\u2713 ' : '\u2717 ') + msg;
+      elFeedback.style.display = 'flex';
+      elCheckBtn.disabled = true;
+    }
+
+    function flashNext() {
+      stopListening();
+      flashState.idx++;
+      if (flashState.idx >= flashQueue.length) {
+        flashQueue = shuffleArray(flashQueue);
+        flashState.idx = 0;
+      }
+      renderFlashcard();
+    }
+
+    /* ─── Pause / Resume ──────────────────────────────────────────── */
+    function togglePause() {
+      flashState.paused = !flashState.paused;
+      if (flashState.paused) {
+        stopListening();
+        clearTimeout(flashState.autoAdvanceTimer);
+        elPausedOverlay.classList.add('show');
+        elPauseBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3"/></svg> Resume';
+      } else {
+        elPausedOverlay.classList.remove('show');
+        elPauseBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause';
+        renderFlashcard();
+      }
+    }
+
+    /* ─── Stats & word list ───────────────────────────────────────── */
+    function updateStats() {
+      elScore.textContent = flashState.score;
+      elTotal.textContent = flashState.total;
+      elStreak.textContent = flashState.streak;
+      const pct = Math.round((flashState.total / flashQueue.length) * 100);
+      elProgressFill.style.width = Math.min(pct, 100) + '%';
+      elProgressLabel.textContent = `${flashState.total} / ${flashQueue.length} reviewed`;
+      elProgressRemaining.textContent = `${Math.max(flashQueue.length - flashState.total, 0)} remaining`;
+      elQCounter.textContent = `Q ${flashState.total + 1} / ${flashQueue.length}`;
+    }
+
+    function buildWordList() {
+      elWordList.innerHTML = flashQueue.slice(0, 20).map((q, i) =>
+        `<li class="flash-word-item" data-qi="${i}">
+          <span class="word-zh">${q.zh}</span>
+          <span class="word-pinyin">${q.pinyin}</span>
+          <span class="word-status"></span>
+        </li>`
+      ).join('');
+    }
+
+    function updateWordListHighlight() {
+      elWordList.querySelectorAll('.flash-word-item').forEach((li, i) => {
+        const status = li.querySelector('.word-status');
+        if (i === flashState.idx % 20) {
+          status.className = 'word-status current';
+        } else if (i < flashState.total % 20) {
+          status.className = 'word-status learned';
+        } else {
+          status.className = 'word-status';
+        }
+      });
+    }
+
+    /* ─── Init ────────────────────────────────────────────────────── */
+    flashQueue = buildQuestionQueue(flashWords);
+    flashQueue = shuffleArray(flashQueue);
+    buildWordList();
+    updateStats();
+    renderFlashcard();
+  </script>
+</body>
+</html>

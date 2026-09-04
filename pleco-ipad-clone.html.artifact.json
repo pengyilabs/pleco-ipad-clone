@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "PlecoClone — Chinese Dictionary iPad Prototype",
+  "entry": "pleco-ipad-clone.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "primary": true,
+  "createdAt": "2026-09-04T11:04:28.825Z",
+  "updatedAt": "2026-09-04T11:04:28.847Z",
+  "designSystemId": "apple",
+  "metadata": {
+    "identifier": "pleco-ipad-clone",
+    "artifactType": "text/html",
+    "inferred": false
+  }
+}
