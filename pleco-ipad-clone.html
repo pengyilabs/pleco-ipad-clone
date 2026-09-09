@@ -371,6 +371,84 @@
       position: relative;
     }
 
+    /* start screen */
+    .flash-start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-6);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+    .flash-start-screen.hidden { display: none; }
+    .flash-start-icon {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: color-mix(in oklch, var(--accent) 8%, transparent);
+      border: 3px solid var(--accent);
+      display: grid; place-items: center;
+      position: relative;
+    }
+    .flash-start-icon svg { width: 48px; height: 48px; color: var(--accent); }
+    .flash-start-icon::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 2px solid color-mix(in oklch, var(--accent) 20%, transparent);
+    }
+    .flash-start-title {
+      font-size: var(--fs-2xl);
+      font-weight: 700;
+      color: var(--fg);
+      margin: 0;
+    }
+    .flash-start-subtitle {
+      font-size: var(--fs-base);
+      color: var(--muted);
+      margin: 0;
+      max-width: 300px;
+    }
+    .flash-start-btn {
+      height: 56px;
+      padding: 0 48px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-size: var(--fs-lg);
+      font-family: var(--font-body);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      letter-spacing: 0.02em;
+    }
+    .flash-start-btn:hover { background: color-mix(in oklch, var(--accent) 85%, white); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .flash-start-btn svg { width: 20px; height: 20px; }
+    .flash-start-meta {
+      display: flex;
+      gap: var(--space-6);
+      font-size: var(--fs-sm);
+      color: var(--muted);
+    }
+    .flash-start-meta span { display: flex; align-items: center; gap: 4px; }
+
+    /* live review area (hidden until started) */
+    .flash-review-area {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-4);
+      width: 100%;
+    }
+    .flash-review-area.active { display: flex; }
+
     /* live badge */
     .flash-live-badge {
       position: absolute;
@@ -617,27 +695,41 @@
     .flash-btn:hover { border-color: var(--accent); }
     .flash-btn:disabled { opacity: 0.4; cursor: default; }
 
-    /* right panel */
+    /* right panel — card deck */
     .flash-right {
-      width: 320px;
+      width: 340px;
       border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       padding: var(--space-5);
       flex-shrink: 0;
-      overflow-y: auto;
+      overflow: hidden;
     }
-    .flash-right h3 {
+    .flash-right-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+    .flash-right-header h3 {
       font-size: var(--fs-lg);
       font-weight: 700;
-      margin: 0 0 var(--space-4);
+      margin: 0;
+    }
+    .flash-deck-count {
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      color: var(--accent);
+      background: color-mix(in oklch, var(--accent) 8%, transparent);
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
     }
 
     /* streak & score */
     .flash-stats {
       display: flex;
       gap: var(--space-3);
-      margin-bottom: var(--space-5);
+      margin-bottom: var(--space-4);
     }
     .flash-stat {
       flex: 1;
@@ -647,7 +739,7 @@
       text-align: center;
     }
     .flash-stat-value {
-      font-size: var(--fs-2xl);
+      font-size: var(--fs-xl);
       font-weight: 700;
       color: var(--fg);
     }
@@ -659,7 +751,7 @@
     .flash-stat.streak .flash-stat-value { color: #f59e0b; }
 
     .flash-progress {
-      margin-bottom: var(--space-5);
+      margin-bottom: var(--space-4);
     }
     .progress-bar {
       height: 4px;
@@ -681,24 +773,63 @@
       color: var(--muted);
       margin-top: var(--space-2);
     }
-    .flash-word-list { list-style: none; padding: 0; margin: 0; }
+
+    /* word list as card deck */
+    .flash-word-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
     .flash-word-item {
       display: flex;
       align-items: center;
       gap: var(--space-3);
-      padding: 8px 0;
-      border-bottom: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      background: var(--surface);
       font-size: var(--fs-sm);
+      transition: all 0.15s;
+      cursor: default;
+      flex-shrink: 0;
     }
-    .flash-word-item .word-zh { font-weight: 700; min-width: 32px; }
-    .flash-word-item .word-pinyin { color: var(--accent); flex: 1; }
+    .flash-word-item:hover { background: color-mix(in oklch, var(--fg) 4%, var(--surface)); }
+    .flash-word-item .word-zh {
+      font-size: var(--fs-xl);
+      font-weight: 700;
+      min-width: 40px;
+      color: var(--fg);
+    }
+    .flash-word-item .word-info { flex: 1; min-width: 0; }
+    .flash-word-item .word-pinyin {
+      color: var(--accent);
+      font-weight: 500;
+      display: block;
+    }
+    .flash-word-item .word-en {
+      color: var(--muted);
+      font-size: var(--fs-xs);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
     .flash-word-item .word-status {
-      width: 8px; height: 8px;
+      width: 10px; height: 10px;
       border-radius: 50%;
       background: var(--border);
+      flex-shrink: 0;
     }
     .flash-word-item .word-status.learned { background: var(--accent-secondary); }
-    .flash-word-item .word-status.current { background: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 20%, transparent); }
+    .flash-word-item .word-status.current {
+      background: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 25%, transparent);
+    }
+    .flash-word-item .word-status.wrong { background: #dc2626; }
 
     /* paused overlay */
     .flash-paused-overlay {
@@ -1191,66 +1322,96 @@
         <div class="screen" id="screen-flash" data-od-id="screen-flash">
           <div class="flash-layout">
             <div class="flash-left">
-              <!-- Live badge -->
-              <div class="flash-live-badge" id="flash-live-badge"><span class="dot"></span> LIVE REVIEW</div>
-              <!-- Question counter -->
-              <div class="flash-q-counter" id="flash-q-counter">Q 1 / 40</div>
-
-              <!-- Prompt -->
-              <div class="flash-prompt" id="flash-prompt">
-                <div class="flash-prompt-type" id="flash-type-label">
-                  <svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                  WRITE
+              <!-- START SCREEN -->
+              <div class="flash-start-screen" id="flash-start-screen">
+                <div class="flash-start-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                 </div>
-                <div class="flash-prompt-text" id="flash-prompt-text">Write this character:</div>
-                <div class="flash-prompt-char" id="flash-prompt-char">你</div>
-              </div>
-
-              <!-- Handwriting canvas (type: write) -->
-              <div class="flash-canvas-wrap" id="flash-canvas-wrap">
-                <svg class="grid-lines" viewBox="0 0 280 280">
-                  <line x1="140" y1="0" x2="140" y2="280"/>
-                  <line x1="0" y1="140" x2="280" y2="140"/>
-                  <line x1="0" y1="0" x2="280" y2="280"/>
-                  <line x1="280" y1="0" x2="0" y2="280"/>
-                </svg>
-                <canvas id="flash-canvas" width="280" height="280"></canvas>
-                <span class="canvas-hint">Draw with finger or Apple Pencil</span>
-              </div>
-
-              <!-- Voice input (type: voice) — mic stays on -->
-              <div class="flash-voice-area" id="flash-voice-area" style="display:none;">
-                <button class="flash-mic-btn" id="flash-mic-btn" title="Microphone active">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                <h2 class="flash-start-title">Ready to Review?</h2>
+                <p class="flash-start-subtitle">Practice 40 HSK 1 vocabulary words with handwriting, voice, and multiple choice.</p>
+                <button class="flash-start-btn" id="flash-start-btn" onclick="startReview()">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Start Review
                 </button>
-                <div class="flash-waveform" id="flash-waveform">
-                  <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-                  <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-                  <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                <div class="flash-start-meta">
+                  <span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 4v16"/></svg>
+                    40 cards
+                  </span>
+                  <span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    ~10 min
+                  </span>
+                  <span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    HSK 1
+                  </span>
                 </div>
-                <span class="flash-voice-hint" id="flash-voice-hint">Listening… say the pinyin</span>
-                <div class="flash-voice-transcript" id="flash-voice-transcript"></div>
               </div>
 
-              <!-- Multiple choice (type: choice) -->
-              <div class="flash-choices" id="flash-choices" style="display:none;"></div>
+              <!-- LIVE REVIEW AREA (hidden until started) -->
+              <div class="flash-review-area" id="flash-review-area">
+                <!-- Live badge -->
+                <div class="flash-live-badge" id="flash-live-badge"><span class="dot"></span> LIVE REVIEW</div>
+                <!-- Question counter -->
+                <div class="flash-q-counter" id="flash-q-counter">Q 1 / 40</div>
 
-              <!-- Feedback -->
-              <div class="flash-feedback" id="flash-feedback"></div>
+                <!-- Prompt -->
+                <div class="flash-prompt" id="flash-prompt">
+                  <div class="flash-prompt-type" id="flash-type-label">
+                    <svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    WRITE
+                  </div>
+                  <div class="flash-prompt-text" id="flash-prompt-text">Write this character:</div>
+                  <div class="flash-prompt-char" id="flash-prompt-char">你</div>
+                </div>
 
-              <!-- Actions -->
-              <div class="flash-actions">
-                <button class="flash-btn" id="flash-clear-btn" onclick="clearFlashCanvas()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-                  Clear
-                </button>
-                <button class="flash-btn" id="flash-pause-btn" onclick="togglePause()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                  Pause
-                </button>
-                <button class="flash-btn primary" id="flash-check-btn" onclick="flashCheck()">
-                  Check
-                </button>
+                <!-- Handwriting canvas (type: write) -->
+                <div class="flash-canvas-wrap" id="flash-canvas-wrap">
+                  <svg class="grid-lines" viewBox="0 0 280 280">
+                    <line x1="140" y1="0" x2="140" y2="280"/>
+                    <line x1="0" y1="140" x2="280" y2="140"/>
+                    <line x1="0" y1="0" x2="280" y2="280"/>
+                    <line x1="280" y1="0" x2="0" y2="280"/>
+                  </svg>
+                  <canvas id="flash-canvas" width="280" height="280"></canvas>
+                  <span class="canvas-hint">Draw with finger or Apple Pencil</span>
+                </div>
+
+                <!-- Voice input (type: voice) — mic stays on -->
+                <div class="flash-voice-area" id="flash-voice-area" style="display:none;">
+                  <button class="flash-mic-btn" id="flash-mic-btn" title="Microphone active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                  </button>
+                  <div class="flash-waveform" id="flash-waveform">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                  </div>
+                  <span class="flash-voice-hint" id="flash-voice-hint">Listening… say the pinyin</span>
+                  <div class="flash-voice-transcript" id="flash-voice-transcript"></div>
+                </div>
+
+                <!-- Multiple choice (type: choice) -->
+                <div class="flash-choices" id="flash-choices" style="display:none;"></div>
+
+                <!-- Feedback -->
+                <div class="flash-feedback" id="flash-feedback"></div>
+
+                <!-- Actions -->
+                <div class="flash-actions">
+                  <button class="flash-btn" id="flash-clear-btn" onclick="clearFlashCanvas()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                    Clear
+                  </button>
+                  <button class="flash-btn" id="flash-pause-btn" onclick="togglePause()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    Pause
+                  </button>
+                  <button class="flash-btn primary" id="flash-check-btn" onclick="flashCheck()">
+                    Check
+                  </button>
+                </div>
               </div>
 
               <!-- Paused overlay -->
@@ -1264,7 +1425,10 @@
               </div>
             </div>
             <div class="flash-right">
-              <h3>HSK 1 · Live Review</h3>
+              <div class="flash-right-header">
+                <h3>HSK 1 Deck</h3>
+                <span class="flash-deck-count" id="flash-deck-count">40 cards</span>
+              </div>
               <div class="flash-stats">
                 <div class="flash-stat">
                   <div class="flash-stat-value" id="flash-score">0</div>
@@ -1592,6 +1756,7 @@
       currentType: null,
       answered: false,
       paused: false,
+      started: false,
       isListening: false,
       autoAdvanceTimer: null,
     };
@@ -1610,6 +1775,10 @@
     }
 
     /* ─── DOM refs ────────────────────────────────────────────────── */
+    const elStartScreen = document.getElementById('flash-start-screen');
+    const elReviewArea = document.getElementById('flash-review-area');
+    const elStartBtn = document.getElementById('flash-start-btn');
+    const elDeckCount = document.getElementById('flash-deck-count');
     const elTypeLabel = document.getElementById('flash-type-label');
     const elPromptText = document.getElementById('flash-prompt-text');
     const elPromptChar = document.getElementById('flash-prompt-char');
@@ -1633,6 +1802,24 @@
     const elProgressLabel = document.getElementById('flash-progress-label');
     const elProgressRemaining = document.getElementById('flash-progress-remaining');
     const elWordList = document.getElementById('flash-word-list');
+
+    /* ═══════════════════════════════════════════════════════════════════
+       START REVIEW
+       ═══════════════════════════════════════════════════════════════════ */
+    function startReview() {
+      flashState.started = true;
+      flashState.idx = 0;
+      flashState.score = 0;
+      flashState.total = 0;
+      flashState.streak = 0;
+      flashState.answered = false;
+      flashState.paused = false;
+
+      elStartScreen.classList.add('hidden');
+      elReviewArea.classList.add('active');
+      updateStats();
+      renderFlashcard();
+    }
 
     /* ═══════════════════════════════════════════════════════════════════
        CANVAS — Handwriting
@@ -1773,7 +1960,6 @@
     function processVoiceAnswer(spoken) {
       if (flashState.answered) return;
       const q = getCurrentQuestion();
-      // Normalize: strip tones, compare lowercase pinyin
       const normalize = s => s.toLowerCase().replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g, m => {
         const map = {'ā':'a','á':'a','ǎ':'a','à':'a','ē':'e','é':'e','ě':'e','è':'e','ī':'i','í':'i','ǐ':'i','ì':'i','ō':'o','ó':'o','ǒ':'o','ò':'o','ū':'u','ú':'u','ǔ':'u','ù':'u','ǖ':'ü','ǘ':'ü','ǚ':'ü','ǜ':'ü'};
         return map[m] || m;
@@ -1782,13 +1968,11 @@
       const spokenNorm = normalize(spoken);
       const targetNorm = normalize(q.pinyin);
 
-      // Also accept the Chinese character itself as valid
       if (spoken.includes(q.zh) || spokenNorm === targetNorm) {
         flashState.answered = true;
         stopListening();
         onCorrect();
       }
-      // If they said something wrong, give them a moment then mark wrong
       if (spoken && !flashState.answered && spokenNorm.length >= targetNorm.length) {
         flashState.answered = true;
         stopListening();
@@ -1819,14 +2003,12 @@
       elFeedback.style.display = 'none';
       elCheckBtn.disabled = false;
 
-      // hide all mode areas
       elCanvasWrap.style.display = 'none';
       elVoiceArea.style.display = 'none';
       elChoices.style.display = 'none';
       elChoices.innerHTML = '';
       elVoiceTranscript.textContent = '';
 
-      // question counter
       elQCounter.textContent = `Q ${flashState.total + 1} / ${flashQueue.length}`;
 
       switch (flashState.currentType) {
@@ -1859,7 +2041,6 @@
           break;
       }
 
-      // highlight current in word list
       updateWordListHighlight();
     }
 
@@ -1901,14 +2082,8 @@
     function flashCheck() {
       if (flashState.answered) return;
       flashState.answered = true;
-      const q = getCurrentQuestion();
       stopListening();
-      if (flashState.currentType === 'voice') {
-        // If mic was on but no speech received, count as correct (user attempted)
-        onCorrect();
-      } else {
-        onCorrect();
-      }
+      onCorrect();
     }
 
     function onCorrect() {
@@ -1970,27 +2145,32 @@
       elProgressLabel.textContent = `${flashState.total} / ${flashQueue.length} reviewed`;
       elProgressRemaining.textContent = `${Math.max(flashQueue.length - flashState.total, 0)} remaining`;
       elQCounter.textContent = `Q ${flashState.total + 1} / ${flashQueue.length}`;
+      elDeckCount.textContent = `${flashQueue.length} cards`;
     }
 
     function buildWordList() {
-      elWordList.innerHTML = flashQueue.slice(0, 20).map((q, i) =>
+      elWordList.innerHTML = flashWords.map((w, i) =>
         `<li class="flash-word-item" data-qi="${i}">
-          <span class="word-zh">${q.zh}</span>
-          <span class="word-pinyin">${q.pinyin}</span>
+          <span class="word-zh">${w.zh}</span>
+          <div class="word-info">
+            <span class="word-pinyin">${w.pinyin}</span>
+            <span class="word-en">${w.en}</span>
+          </div>
           <span class="word-status"></span>
         </li>`
       ).join('');
     }
 
     function updateWordListHighlight() {
-      elWordList.querySelectorAll('.flash-word-item').forEach((li, i) => {
+      const q = getCurrentQuestion();
+      elWordList.querySelectorAll('.flash-word-item').forEach((li) => {
+        const zh = li.querySelector('.word-zh').textContent;
         const status = li.querySelector('.word-status');
-        if (i === flashState.idx % 20) {
+        if (zh === q.zh) {
           status.className = 'word-status current';
-        } else if (i < flashState.total % 20) {
+          li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else if (status.classList.contains('current')) {
           status.className = 'word-status learned';
-        } else {
-          status.className = 'word-status';
         }
       });
     }
@@ -2000,7 +2180,6 @@
     flashQueue = shuffleArray(flashQueue);
     buildWordList();
     updateStats();
-    renderFlashcard();
   </script>
 </body>
 </html>
