@@ -1,0 +1,16 @@
+# Open Design files
+/open-design/
+/.od-frames/
+/.od-skills/
+*.artifact.json
+
+# Drawing files (Open Design canvas exports)
+drawing-*.png
+
+# System files
+.DS_Store
+
+# Node
+node_modules/
+dist/
+build/
