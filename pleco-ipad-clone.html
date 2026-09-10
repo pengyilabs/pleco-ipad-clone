@@ -391,6 +391,11 @@
       border: 3px solid var(--accent);
       display: grid; place-items: center;
       position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .flash-start-icon:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 8px color-mix(in oklch, var(--accent) 12%, transparent);
     }
     .flash-start-icon svg { width: 48px; height: 48px; color: var(--accent); }
     .flash-start-icon::after {
@@ -412,25 +417,12 @@
       margin: 0;
       max-width: 300px;
     }
-    .flash-start-btn {
-      height: 56px;
-      padding: 0 48px;
-      border-radius: var(--radius-pill);
-      border: none;
-      background: var(--accent);
-      color: white;
-      font-size: var(--fs-lg);
-      font-family: var(--font-body);
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-3);
-      letter-spacing: 0.02em;
+    .flash-start-hint {
+      font-size: var(--fs-sm);
+      color: var(--accent);
+      font-weight: 500;
+      margin: 0;
     }
-    .flash-start-btn:hover { background: color-mix(in oklch, var(--accent) 85%, white); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-    .flash-start-btn svg { width: 20px; height: 20px; }
     .flash-start-meta {
       display: flex;
       gap: var(--space-6);
@@ -1339,15 +1331,12 @@
             <div class="flash-left">
               <!-- START SCREEN -->
               <div class="flash-start-screen" id="flash-start-screen">
-                <div class="flash-start-icon">
+                <div class="flash-start-icon" onclick="startReview()" style="cursor:pointer;">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                 </div>
                 <h2 class="flash-start-title">Ready to Review?</h2>
                 <p class="flash-start-subtitle">Practice 40 HSK 1 vocabulary words with handwriting, voice, and multiple choice.</p>
-                <button class="flash-start-btn" id="flash-start-btn" onclick="startReview()">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  Start Review
-                </button>
+                <p class="flash-start-hint">Tap the microphone to start</p>
                 <div class="flash-start-meta">
                   <span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 4v16"/></svg>
@@ -1794,7 +1783,6 @@
     const elStartScreen = document.getElementById('flash-start-screen');
     const elReviewArea = document.getElementById('flash-review-area');
     const elRight = document.querySelector('.flash-right');
-    const elStartBtn = document.getElementById('flash-start-btn');
     const elDeckCount = document.getElementById('flash-deck-count');
     const elTypeLabel = document.getElementById('flash-type-label');
     const elPromptText = document.getElementById('flash-prompt-text');
