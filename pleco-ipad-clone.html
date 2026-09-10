@@ -383,6 +383,7 @@
       max-width: 400px;
     }
     .flash-start-screen.hidden { display: none; }
+    .flash-right.hidden { display: none; }
     .flash-start-icon {
       width: 120px; height: 120px;
       border-radius: 50%;
@@ -595,21 +596,35 @@
     }
     .flash-waveform .bar {
       width: 3px;
-      height: 8px;
+      height: 6px;
       background: var(--border);
       border-radius: 2px;
-      transition: height 0.08s;
+      transition: height 0.1s ease, background 0.2s ease;
+    }
+    .flash-waveform.speaking .bar {
+      background: var(--accent);
     }
     .flash-voice-hint {
       font-size: var(--fs-sm);
       color: var(--muted);
+      transition: color 0.2s ease;
+    }
+    .flash-voice-hint.detected {
+      color: var(--accent);
+      font-weight: 600;
     }
     .flash-voice-transcript {
       font-size: var(--fs-xl);
       font-weight: 600;
-      color: var(--accent);
-      min-height: 30px;
+      color: var(--fg);
+      min-height: 36px;
       margin-top: var(--space-2);
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .flash-voice-transcript.visible {
+      opacity: 1;
     }
 
     /* multiple choice */
@@ -1362,7 +1377,7 @@
                     <svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                     WRITE
                   </div>
-                  <div class="flash-prompt-text" id="flash-prompt-text">Write this character:</div>
+                  <div class="flash-prompt-text" id="flash-prompt-text">How is this pronounced?</div>
                   <div class="flash-prompt-char" id="flash-prompt-char">你</div>
                 </div>
 
@@ -1758,6 +1773,7 @@
       paused: false,
       started: false,
       isListening: false,
+      speaking: false,
       autoAdvanceTimer: null,
     };
 
@@ -1777,6 +1793,7 @@
     /* ─── DOM refs ────────────────────────────────────────────────── */
     const elStartScreen = document.getElementById('flash-start-screen');
     const elReviewArea = document.getElementById('flash-review-area');
+    const elRight = document.querySelector('.flash-right');
     const elStartBtn = document.getElementById('flash-start-btn');
     const elDeckCount = document.getElementById('flash-deck-count');
     const elTypeLabel = document.getElementById('flash-type-label');
@@ -1816,6 +1833,7 @@
       flashState.paused = false;
 
       elStartScreen.classList.add('hidden');
+      elRight.classList.add('hidden');
       elReviewArea.classList.add('active');
       updateStats();
       renderFlashcard();
@@ -1877,6 +1895,8 @@
        ═══════════════════════════════════════════════════════════════════ */
     let recognition = null;
     let waveInterval = null;
+    let speechDetectTimer = null;
+    let validationTimer = null;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     function initSpeechRecognition() {
@@ -1897,9 +1917,43 @@
             interim += transcript;
           }
         }
-        elVoiceTranscript.textContent = final || interim;
+
+        const displayText = final || interim;
+
+        if (displayText) {
+          if (!flashState.speaking) {
+            flashState.speaking = true;
+            elVoiceHint.textContent = 'Heard you!';
+            elVoiceHint.classList.add('detected');
+            elWaveform.classList.add('speaking');
+            startSpeakingWave();
+          }
+          clearTimeout(speechDetectTimer);
+          speechDetectTimer = setTimeout(() => {
+            if (flashState.speaking && !flashState.answered) {
+              flashState.speaking = false;
+              elVoiceHint.textContent = 'Listening…';
+              elVoiceHint.classList.remove('detected');
+              elWaveform.classList.remove('speaking');
+              stopSpeakingWave();
+              startIdleWave();
+            }
+          }, 800);
+        }
+
+        elVoiceTranscript.textContent = displayText;
+        if (displayText) {
+          elVoiceTranscript.classList.add('visible');
+        }
+
         if (final && !flashState.answered) {
-          processVoiceAnswer(final.trim());
+          elVoiceHint.textContent = 'Checking…';
+          elVoiceHint.classList.remove('detected');
+          elWaveform.classList.remove('speaking');
+          stopSpeakingWave();
+          validationTimer = setTimeout(() => {
+            processVoiceAnswer(final.trim());
+          }, 1000);
         }
       };
 
@@ -1920,41 +1974,68 @@
     function startListening() {
       if (!recognition) recognition = initSpeechRecognition();
       if (!recognition) {
-        elVoiceHint.textContent = 'Voice not supported — tap Check';
+        elVoiceHint.textContent = 'Voice not supported';
         return;
       }
       flashState.isListening = true;
+      flashState.speaking = false;
       elMicBtn.classList.add('listening');
-      elVoiceHint.textContent = 'Listening… say the pinyin';
-      startWaveform();
+      elVoiceHint.textContent = 'Listening…';
+      elVoiceHint.classList.remove('detected');
+      elVoiceTranscript.classList.remove('visible');
+      elVoiceTranscript.textContent = '';
+      elWaveform.classList.remove('speaking');
+      startIdleWave();
       try { recognition.start(); } catch(e) {}
     }
 
     function stopListening() {
       flashState.isListening = false;
+      flashState.speaking = false;
+      clearTimeout(speechDetectTimer);
+      clearTimeout(validationTimer);
       elMicBtn.classList.remove('listening');
-      stopWaveform();
+      elWaveform.classList.remove('speaking');
+      stopIdleWave();
+      stopSpeakingWave();
       if (recognition) {
         try { recognition.stop(); } catch(e) {}
       }
     }
 
-    function startWaveform() {
+    function startIdleWave() {
+      stopIdleWave();
       const bars = elWaveform.querySelectorAll('.bar');
-      waveInterval = setInterval(() => {
-        bars.forEach(bar => {
-          bar.style.height = (Math.random() * 36 + 6) + 'px';
-          bar.style.background = 'var(--accent)';
-        });
-      }, 80);
-    }
-
-    function stopWaveform() {
-      clearInterval(waveInterval);
-      elWaveform.querySelectorAll('.bar').forEach(bar => {
-        bar.style.height = '8px';
+      bars.forEach(bar => {
+        bar.style.height = '6px';
         bar.style.background = 'var(--border)';
       });
+      waveInterval = setInterval(() => {
+        bars.forEach(bar => {
+          const h = 4 + Math.random() * 4;
+          bar.style.height = h + 'px';
+        });
+      }, 200);
+    }
+
+    function stopIdleWave() {
+      clearInterval(waveInterval);
+    }
+
+    let speakingInterval = null;
+    function startSpeakingWave() {
+      stopSpeakingWave();
+      const bars = elWaveform.querySelectorAll('.bar');
+      speakingInterval = setInterval(() => {
+        bars.forEach(bar => {
+          bar.style.height = (Math.random() * 40 + 6) + 'px';
+          bar.style.background = 'var(--accent)';
+        });
+      }, 60);
+    }
+
+    function stopSpeakingWave() {
+      clearInterval(speakingInterval);
     }
 
     function processVoiceAnswer(spoken) {
@@ -1970,12 +2051,10 @@
 
       if (spoken.includes(q.zh) || spokenNorm === targetNorm) {
         flashState.answered = true;
-        stopListening();
         onCorrect();
       }
       if (spoken && !flashState.answered && spokenNorm.length >= targetNorm.length) {
         flashState.answered = true;
-        stopListening();
         onWrong(q);
       }
     }
@@ -1994,7 +2073,9 @@
        ═══════════════════════════════════════════════════════════════════ */
     function renderFlashcard() {
       clearTimeout(flashState.autoAdvanceTimer);
+      clearTimeout(validationTimer);
       flashState.answered = false;
+      flashState.speaking = false;
       flashState.currentType = pickType();
       const q = getCurrentQuestion();
 
@@ -2003,11 +2084,15 @@
       elFeedback.style.display = 'none';
       elCheckBtn.disabled = false;
 
+      const isVoice = flashState.currentType === 'voice';
+      document.querySelector('.flash-actions').style.display = isVoice ? 'none' : 'flex';
+
       elCanvasWrap.style.display = 'none';
       elVoiceArea.style.display = 'none';
       elChoices.style.display = 'none';
       elChoices.innerHTML = '';
       elVoiceTranscript.textContent = '';
+      elVoiceTranscript.classList.remove('visible');
 
       elQCounter.textContent = `Q ${flashState.total + 1} / ${flashQueue.length}`;
 
@@ -2023,11 +2108,11 @@
 
         case 'voice':
           elTypeLabel.innerHTML = '<svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg> SPEAK';
-          elPromptText.textContent = 'Say the pinyin for:';
+          elPromptText.textContent = 'How is this pronounced?';
           elPromptChar.textContent = q.zh;
           elPromptChar.className = 'flash-prompt-char';
           elVoiceArea.style.display = 'flex';
-          elVoiceHint.textContent = 'Listening… say the pinyin';
+          elVoiceHint.textContent = 'Listening\u2026';
           startListening();
           break;
 
